@@ -12,8 +12,10 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
+	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -115,6 +117,71 @@ func Register(response http.ResponseWriter, request *http.Request) {
 	return
 }
 
+func RefreshToken(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("Content-Type", "application/json")
+	var result out.Response
+	type tokenReqBody struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+	tokenReq := tokenReqBody{}
+	err := json.NewDecoder(request.Body).Decode(&tokenReq)
+
+	if err != nil {
+		response.WriteHeader(http.StatusBadRequest)
+		result.Code = http.StatusBadRequest
+		result.Status = "500"
+		result.Message = "Bad request"
+		json.NewEncoder(response).Encode(result)
+		return
+	}
+
+	token, err := jwt.Parse(tokenReq.RefreshToken, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+
+		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
+		return middleware.JWT_SIGNATURE_KEY, nil
+	})
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		// Get the user record from database or
+		// run through your business logic to verify if the user can log in
+		id, err := strconv.Atoi(fmt.Sprint(claims["id"]))
+		fullname := fmt.Sprint(claims["fullname"])
+		token, refreshToken, err := middleware.CreateToken(id, fullname)
+
+		if err != nil {
+			response.WriteHeader(http.StatusInternalServerError)
+			result.Code = http.StatusInternalServerError
+			result.Status = "500"
+			result.Message = "Error"
+			json.NewEncoder(response).Encode(result)
+			return
+		}
+		tokenResponse := map[string]interface{}{
+			"token":         token,
+			"refresh_token": refreshToken,
+		}
+
+		response.WriteHeader(http.StatusOK)
+		result.Code = http.StatusOK
+		result.Status = "200"
+		result.Message = "Success generate token"
+		result.Data = tokenResponse
+		json.NewEncoder(response).Encode(result)
+		return
+	}
+
+	response.WriteHeader(http.StatusInternalServerError)
+	result.Code = http.StatusInternalServerError
+	result.Status = "500"
+	result.Message = "Error"
+	json.NewEncoder(response).Encode(result)
+	return
+}
+
 func Login(response http.ResponseWriter, request *http.Request) {
 	var result out.Response
 	response.Header().Set("Content-Type", "application/json")
@@ -167,11 +234,12 @@ func Login(response http.ResponseWriter, request *http.Request) {
 	token, refreshToken, err := middleware.CreateToken(user.IdUser, user.Fullname)
 
 	userResponse := map[string]interface{}{
-		"idUser":       dbUser.IdUser,
-		"email":        dbUser.Email,
-		"fullname":     dbUser.Fullname,
-		"token":        token,
-		"refresh_toke": refreshToken,
+		"idUser":        dbUser.IdUser,
+		"email":         dbUser.Email,
+		"fullname":      dbUser.Fullname,
+		"profile":       dbUser.Profile,
+		"token":         token,
+		"refresh_token": refreshToken,
 	}
 
 	response.WriteHeader(http.StatusOK)

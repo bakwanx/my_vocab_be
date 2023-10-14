@@ -1,70 +1,85 @@
 package middleware
 
 import (
-	"encoding/json"
-	"my_vocab/dto/out"
+	"context"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt"
 )
 
-func CreateToken(id int, fullname string) (generateToken string, refreshToken string, err error) {
-	claims := jwt.MapClaims{}
+var JWT_SIGNING_METHOD = jwt.SigningMethodHS256
+var JWT_SIGNATURE_KEY = []byte("secret")
+
+func CreateToken(id int, fullname string) (generateToken string, generateRefreshToken string, err error) {
+	var EXPIRATION_DURATION = time.Now().Add(time.Minute * 1).Unix()
+	var REFRESH_EXPIRATION_DURATION = time.Now().Add(time.Minute * 2).Unix()
+
+	// Create token
+	token := jwt.New(JWT_SIGNING_METHOD)
+
+	// Set claims
+	// This is the information which frontend can use
+	// The backend can also decode the token and get admin etc.
+	claims := token.Claims.(jwt.MapClaims)
 	claims["id"] = id
 	claims["fullname"] = fullname
-	claims["exp"] = time.Now().Add(time.Minute * 1).Unix()
+	claims["exp"] = EXPIRATION_DURATION
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	generateToken, _ = token.SignedString(JWT_SIGNATURE_KEY)
 
-	generateToken, err = token.SignedString([]byte("secret"))
-
-	rtClaims := jwt.MapClaims{}
-	claims["refresh_id"] = id
+	refreshToken := jwt.New(JWT_SIGNING_METHOD)
+	rtClaims := refreshToken.Claims.(jwt.MapClaims)
+	claims["id"] = id
 	claims["fullname"] = fullname
-	claims["exp"] = time.Now().Add(time.Minute * 1).Unix()
-	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
-	refreshToken, _ = rt.SignedString([]byte("secret"))
+	rtClaims["exp"] = REFRESH_EXPIRATION_DURATION
+
+	generateRefreshToken, _ = refreshToken.SignedString(JWT_SIGNATURE_KEY)
 
 	return
 }
 
-func JWTMiddleware(next http.Handler) http.Handler {
+func MiddlewareJWTAuthorization(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c, err := r.Cookie("token")
-		var result out.Response
+		w.Header().Set("Content-Type", "application/json")
+		if r.URL.Path == "/login" {
+			next.ServeHTTP(w, r)
+			return
+		}
 
-		if err != nil {
-			if err == http.ErrNoCookie {
-				w.WriteHeader(http.StatusUnauthorized)
-				result.Code = http.StatusUnauthorized
-				result.Status = "Failed"
-				result.Message = "Unauthorized"
-				json.NewEncoder(w).Encode(result)
+		authorizationHeader := r.Header.Get("Authorization")
+		if !strings.Contains(authorizationHeader, "Bearer") {
+			http.Error(w, "Invalid token", http.StatusBadRequest)
+			return
+		}
+
+		tokenString := strings.Replace(authorizationHeader, "Bearer ", "", -1)
+
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			if method, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("Signing method invalid")
+			} else if method != JWT_SIGNING_METHOD {
+				return nil, fmt.Errorf("Signing method invalid")
 			}
-		}
 
-		tokenString := c.Value
-		claims := jwt.MapClaims{}
-
-		token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
-			return []byte("secret"), nil
+			return JWT_SIGNATURE_KEY, nil
 		})
-
 		if err != nil {
-			w.WriteHeader(http.StatusUnauthorized)
-			result.Code = http.StatusUnauthorized
-			result.Status = "Failed"
-			result.Message = "Unauthorized"
-			json.NewEncoder(w).Encode(result)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 
-		if !token.Valid {
-			w.WriteHeader(http.StatusUnauthorized)
-			result.Code = http.StatusUnauthorized
-			result.Status = "Failed"
-			result.Message = "Unauthorized"
-			json.NewEncoder(w).Encode(result)
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok || !token.Valid {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
+
+		ctx := context.WithValue(context.Background(), "userInfo", claims)
+		r = r.WithContext(ctx)
+
+		next.ServeHTTP(w, r)
 	})
 }

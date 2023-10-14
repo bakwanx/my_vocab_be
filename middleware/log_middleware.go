@@ -35,6 +35,7 @@ func (o *resonseObserver) WriteHeader(code int) {
 	o.status = code
 }
 
+// just for reference
 func CustomLogger(out io.Writer, h http.Handler) http.Handler {
 	logger := log.New(out, "", 0)
 

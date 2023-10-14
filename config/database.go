@@ -29,7 +29,7 @@ func InitDb() {
 	}
 
 	if err == nil {
-		MigrateDB()
+		// MigrateDB()
 		log.Println("Connected!")
 	}
 

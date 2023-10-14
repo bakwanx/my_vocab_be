@@ -112,46 +112,61 @@ func PatchVocab(response http.ResponseWriter, request *http.Request) {
 	return
 }
 
-func GetListVocabulary(response http.ResponseWriter, request *http.Request) {
+func GetVocabularyByOrder(response http.ResponseWriter, request *http.Request) {
 	response.Header().Set("Content-Type", "application/json")
 	var result out.Response
 
 	idUser := mux.Vars(request)["id_user"]
-	typeRequest := mux.Vars(request)["type_request"]
 	vocabModels := []models.Vocab{}
 
-	switch typeRequest {
-	case filter[0]:
-		// search by order alphabet
-		config.DB.Model(models.Vocab{}).Where("id_user = ?", idUser).Order("vocab desc").Find(&vocabModels)
-		response.WriteHeader(http.StatusOK)
-		result.Code = http.StatusOK
-		result.Status = "Success"
-		result.Data = vocabModels
-		result.Message = "Berhasil mendapatkan vocabulary"
-		json.NewEncoder(response).Encode(result)
-		return
-	case filter[1]:
-		// search by search keyword
-		searchKeyword := mux.Vars(request)["keyword"]
-		config.DB.Model(models.Vocab{}).Where("id_user = ? AND vocab LIKE ?%", idUser, searchKeyword).Find(&vocabModels)
-		response.WriteHeader(http.StatusOK)
-		result.Code = http.StatusOK
-		result.Status = "Success"
-		result.Data = vocabModels
-		result.Message = "Berhasil mendapatkan vocabulary"
-		json.NewEncoder(response).Encode(result)
-		return
-	default:
-		config.DB.Model(models.Vocab{}).Where("id_user = ?", idUser).Order("created_at desc").Find(&vocabModels)
-		response.WriteHeader(http.StatusOK)
-		result.Code = http.StatusOK
-		result.Status = "Success"
-		result.Data = vocabModels
-		result.Message = "Berhasil mendapatkan vocabulary"
-		json.NewEncoder(response).Encode(result)
-		return
-	}
+	// get by order alphabet
+	config.DB.Model(models.Vocab{}).Where("id_user = ?", idUser).Order("vocab desc").Find(&vocabModels)
+	response.WriteHeader(http.StatusOK)
+	result.Code = http.StatusOK
+	result.Status = "Success"
+	result.Data = vocabModels
+	result.Message = "Berhasil mendapatkan vocabulary"
+	json.NewEncoder(response).Encode(result)
+	return
+
+}
+
+func GetVocabularyByDate(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("Content-Type", "application/json")
+	var result out.Response
+
+	idUser := mux.Vars(request)["id_user"]
+	vocabModels := []models.Vocab{}
+
+	// get by date
+	config.DB.Model(models.Vocab{}).Where("id_user = ?", idUser).Order("created_at desc").Find(&vocabModels)
+	response.WriteHeader(http.StatusOK)
+	result.Code = http.StatusOK
+	result.Status = "Success"
+	result.Data = vocabModels
+	result.Message = "Berhasil mendapatkan vocabulary"
+	json.NewEncoder(response).Encode(result)
+	return
+
+}
+
+func GetVocabularyBySearch(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("Content-Type", "application/json")
+	var result out.Response
+
+	idUser := mux.Vars(request)["id_user"]
+	vocabModels := []models.Vocab{}
+
+	// search by search keyword
+	searchKeyword := mux.Vars(request)["keyword"]
+	config.DB.Model(models.Vocab{}).Where("id_user = ? AND vocab LIKE ?%", idUser, searchKeyword).Find(&vocabModels)
+	response.WriteHeader(http.StatusOK)
+	result.Code = http.StatusOK
+	result.Status = "Success"
+	result.Data = vocabModels
+	result.Message = "Berhasil mendapatkan vocabulary"
+	json.NewEncoder(response).Encode(result)
+	return
 
 }
 
