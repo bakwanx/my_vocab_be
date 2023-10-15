@@ -26,6 +26,7 @@ func InitRoute() {
 	eJwt.HandleFunc("/vocabulary/date/{id_user}", controller.GetVocabularyByDate).Methods("GET")
 	eJwt.HandleFunc("/vocabulary/search", controller.GetVocabularyBySearch).Methods("POST")
 	eJwt.HandleFunc("/type/vocabulary", controller.PostTypeVocab).Methods("POST")
+	eJwt.HandleFunc("/type/vocabulary", controller.GetType).Methods("GET")
 	eJwt.Use(middleware.MiddlewareJWTAuthorization)
 	http.ListenAndServe(":8080", middleware.CustomLogger(os.Stderr, mux))
 }

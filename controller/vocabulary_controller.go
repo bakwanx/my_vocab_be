@@ -193,13 +193,13 @@ func PostTypeVocab(response http.ResponseWriter, request *http.Request) {
 	}
 
 	typeVocabModels = models.TypeVocab{
-		Type:        typeVocab,
-		Description: description,
+		Type:        typeVocabModels.Type,
+		Description: typeVocabModels.Description,
 		CreatedAt:   timeNow,
 		UpdatedAt:   timeNow,
 	}
 
-	err := config.DB.Save(&typeVocabModels).Error
+	err = config.DB.Save(&typeVocabModels).Error
 
 	if err != nil {
 		response.WriteHeader(http.StatusInternalServerError)
