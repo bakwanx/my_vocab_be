@@ -154,12 +154,12 @@ func GetVocabularyBySearch(response http.ResponseWriter, request *http.Request) 
 	response.Header().Set("Content-Type", "application/json")
 	var result out.Response
 
-	idUser := mux.Vars(request)["id_user"]
+	idUser := request.FormValue("id_user")
+	keyword := request.FormValue("keyword")
 	vocabModels := []models.Vocab{}
 
 	// search by search keyword
-	searchKeyword := mux.Vars(request)["keyword"]
-	config.DB.Model(models.Vocab{}).Where("id_user = ? AND vocab LIKE ?%", idUser, searchKeyword).Find(&vocabModels)
+	config.DB.Model(models.Vocab{}).Where("id_user = ? AND vocab LIKE ?%", idUser, keyword).Find(&vocabModels)
 	response.WriteHeader(http.StatusOK)
 	result.Code = http.StatusOK
 	result.Status = "Success"
@@ -176,12 +176,13 @@ func PostTypeVocab(response http.ResponseWriter, request *http.Request) {
 		typeVocabModels models.TypeVocab
 	)
 	response.Header().Set("Content-Type", "application/json")
-	typeVocab := request.FormValue("type_vocab")
+
+	err := json.NewDecoder(request.Body).Decode(&typeVocabModels)
 	timeNow := time.Now()
 
 	// check user
 	checkTypeVocab := models.TypeVocab{}
-	config.DB.Where("type = ?", typeVocab).First(&checkTypeVocab)
+	config.DB.Where("type = ?", typeVocabModels.Type).First(&checkTypeVocab)
 	if checkTypeVocab.Type != "" {
 		response.WriteHeader(http.StatusConflict)
 		result.Code = http.StatusConflict
@@ -192,9 +193,10 @@ func PostTypeVocab(response http.ResponseWriter, request *http.Request) {
 	}
 
 	typeVocabModels = models.TypeVocab{
-		Type:      typeVocab,
-		CreatedAt: timeNow,
-		UpdatedAt: timeNow,
+		Type:        typeVocab,
+		Description: description,
+		CreatedAt:   timeNow,
+		UpdatedAt:   timeNow,
 	}
 
 	err := config.DB.Save(&typeVocabModels).Error

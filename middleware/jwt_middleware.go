@@ -14,8 +14,8 @@ var JWT_SIGNING_METHOD = jwt.SigningMethodHS256
 var JWT_SIGNATURE_KEY = []byte("secret")
 
 func CreateToken(id int, fullname string) (generateToken string, generateRefreshToken string, err error) {
-	var EXPIRATION_DURATION = time.Now().Add(time.Minute * 1).Unix()
-	var REFRESH_EXPIRATION_DURATION = time.Now().Add(time.Minute * 2).Unix()
+	var EXPIRATION_DURATION = time.Now().Add(time.Hour * 24).Unix()
+	var REFRESH_EXPIRATION_DURATION = time.Now().Add(time.Hour * 720).Unix()
 
 	// Create token
 	token := jwt.New(JWT_SIGNING_METHOD)

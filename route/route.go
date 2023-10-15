@@ -23,8 +23,9 @@ func InitRoute() {
 	eJwt.HandleFunc("/vocabulary", controller.PostVocab).Methods("POST")
 	eJwt.HandleFunc("/vocabulary", controller.PatchVocab).Methods("PATCH")
 	eJwt.HandleFunc("/vocabulary/{id_user}", controller.GetVocabularyByOrder).Methods("GET")
-	eJwt.HandleFunc("/vocabulary/{id_user}", controller.GetVocabularyByDate).Methods("GET")
-	eJwt.HandleFunc("/vocabulary/{id_user}/{keyword}", controller.GetVocabularyBySearch).Methods("GET")
+	eJwt.HandleFunc("/vocabulary/date/{id_user}", controller.GetVocabularyByDate).Methods("GET")
+	eJwt.HandleFunc("/vocabulary/search", controller.GetVocabularyBySearch).Methods("POST")
+	eJwt.HandleFunc("/type/vocabulary", controller.PostTypeVocab).Methods("POST")
 	eJwt.Use(middleware.MiddlewareJWTAuthorization)
 	http.ListenAndServe(":8080", middleware.CustomLogger(os.Stderr, mux))
 }
