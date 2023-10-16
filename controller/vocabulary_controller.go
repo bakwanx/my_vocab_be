@@ -6,10 +6,7 @@ import (
 	"my_vocab/dto/out"
 	"my_vocab/models"
 	"net/http"
-	"strconv"
 	"time"
-
-	"github.com/gorilla/mux"
 )
 
 var (
@@ -22,16 +19,14 @@ func PostVocab(response http.ResponseWriter, request *http.Request) {
 		vocabModels models.Vocab
 	)
 	response.Header().Set("Content-Type", "application/json")
-	vocab := request.FormValue("vocab")
-	idType := request.FormValue("id_type")
-	idUser, _ := strconv.Atoi(request.FormValue("id_user"))
-	variation := request.FormValue("variation")
-	note := request.FormValue("note")
+
+	err := json.NewDecoder(request.Body).Decode(&vocabModels)
+
 	timeNow := time.Now()
 
 	// check user
 	checkVocab := models.Vocab{}
-	config.DB.Where("vocab = ?", vocab).First(&checkVocab)
+	config.DB.Where("vocab = ?", vocabModels.Vocab).First(&checkVocab)
 	if checkVocab.Vocab != "" {
 		response.WriteHeader(http.StatusConflict)
 		result.Code = http.StatusConflict
@@ -40,24 +35,16 @@ func PostVocab(response http.ResponseWriter, request *http.Request) {
 		json.NewEncoder(response).Encode(result)
 		return
 	}
-
-	vocabModels = models.Vocab{
-		IdUser:    idUser,
-		Vocab:     vocab,
-		IdType:    idType,
-		Variation: variation,
-		Note:      note,
-		CreatedAt: timeNow,
-		UpdatedAt: timeNow,
-	}
-
-	err := config.DB.Save(&vocabModels).Error
+	vocabModels.CreatedAt = timeNow
+	vocabModels.UpdatedAt = timeNow
+	err = config.DB.Save(&vocabModels).Error
+	config.DB.Model(models.TypeVocab{}).Where("id_type = ?", vocabModels.IdType).First(&vocabModels.TypeVocab)
 
 	if err != nil {
 		response.WriteHeader(http.StatusInternalServerError)
 		result.Code = http.StatusInternalServerError
 		result.Status = "Failed"
-		result.Message = "Status Internal Server Error"
+		result.Message = err.Error()
 		json.NewEncoder(response).Encode(result)
 		return
 	}
@@ -77,22 +64,18 @@ func PatchVocab(response http.ResponseWriter, request *http.Request) {
 		vocabModels models.Vocab
 	)
 	response.Header().Set("Content-Type", "application/json")
-	idVocab := request.FormValue("id_vocab")
-	vocab := request.FormValue("vocab")
-	idType := request.FormValue("id_type")
-	variation := request.FormValue("variation")
-	note := request.FormValue("note")
+	err := json.NewDecoder(request.Body).Decode(&vocabModels)
+
+	// idVocab := request.FormValue("id_vocab")
+	// vocab := request.FormValue("vocab")
+	// idType := request.FormValue("id_type")
+	// variation := request.FormValue("variation")
+	// note := request.FormValue("note")
 	timeNow := time.Now()
 
-	vocabModels = models.Vocab{
-		Vocab:     vocab,
-		IdType:    idType,
-		Variation: variation,
-		Note:      note,
-		UpdatedAt: timeNow,
-	}
-
-	err := config.DB.Where("id_vocab = ?", idVocab).Updates(&vocabModels).Error
+	vocabModels.CreatedAt = timeNow
+	vocabModels.UpdatedAt = timeNow
+	err = config.DB.Where("id_vocab = ?", vocabModels.IdVocab).Updates(&vocabModels).Error
 
 	if err != nil {
 		response.WriteHeader(http.StatusInternalServerError)
@@ -116,11 +99,11 @@ func GetVocabularyByOrder(response http.ResponseWriter, request *http.Request) {
 	response.Header().Set("Content-Type", "application/json")
 	var result out.Response
 
-	idUser := mux.Vars(request)["id_user"]
+	idUser := request.URL.Query().Get("id_user")
 	vocabModels := []models.Vocab{}
 
 	// get by order alphabet
-	config.DB.Model(models.Vocab{}).Where("id_user = ?", idUser).Order("vocab desc").Find(&vocabModels)
+	config.DB.Model(models.Vocab{}).Where("id_user = ?", idUser).Preload("TypeVocab").Find(&vocabModels)
 	response.WriteHeader(http.StatusOK)
 	result.Code = http.StatusOK
 	result.Status = "Success"
@@ -135,11 +118,11 @@ func GetVocabularyByDate(response http.ResponseWriter, request *http.Request) {
 	response.Header().Set("Content-Type", "application/json")
 	var result out.Response
 
-	idUser := mux.Vars(request)["id_user"]
+	idUser := request.URL.Query().Get("id_user")
 	vocabModels := []models.Vocab{}
 
 	// get by date
-	config.DB.Model(models.Vocab{}).Where("id_user = ?", idUser).Order("created_at desc").Find(&vocabModels)
+	config.DB.Model(models.Vocab{}).Where("id_user = ?", idUser).Order("created_at desc").Preload("TypeVocab").Find(&vocabModels)
 	response.WriteHeader(http.StatusOK)
 	result.Code = http.StatusOK
 	result.Status = "Success"
@@ -159,7 +142,7 @@ func GetVocabularyBySearch(response http.ResponseWriter, request *http.Request) 
 	vocabModels := []models.Vocab{}
 
 	// search by search keyword
-	config.DB.Model(models.Vocab{}).Where("id_user = ? AND vocab LIKE ?%", idUser, keyword).Find(&vocabModels)
+	config.DB.Model(models.Vocab{}).Where("id_user = ? AND vocab LIKE ?%", idUser, keyword).Preload("TypeVocab").Find(&vocabModels)
 	response.WriteHeader(http.StatusOK)
 	result.Code = http.StatusOK
 	result.Status = "Success"
@@ -205,7 +188,7 @@ func PostTypeVocab(response http.ResponseWriter, request *http.Request) {
 		response.WriteHeader(http.StatusInternalServerError)
 		result.Code = http.StatusInternalServerError
 		result.Status = "Failed"
-		result.Message = "Status Internal Server Error"
+		result.Message = err.Error()
 		json.NewEncoder(response).Encode(result)
 		return
 	}
