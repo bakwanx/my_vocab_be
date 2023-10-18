@@ -165,7 +165,7 @@ func PostTypeVocab(response http.ResponseWriter, request *http.Request) {
 
 	// check user
 	checkTypeVocab := models.TypeVocab{}
-	config.DB.Where("type = ?", typeVocabModels.Type).First(&checkTypeVocab)
+	config.DB.Model(models.TypeVocab{}).Where("type = ?", typeVocabModels.Type).First(&checkTypeVocab)
 	if checkTypeVocab.Type != "" {
 		response.WriteHeader(http.StatusConflict)
 		result.Code = http.StatusConflict
@@ -213,6 +213,50 @@ func GetType(response http.ResponseWriter, request *http.Request) {
 	result.Status = "Success"
 	result.Data = typeModels
 	result.Message = "Berhasil mendapatkan tipe vocab"
+	json.NewEncoder(response).Encode(result)
+	return
+
+}
+
+func DeleteVocab(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("Content-Type", "application/json")
+	var (
+		result      out.Response
+		vocabModels models.Vocab
+	)
+	err := json.NewDecoder(request.Body).Decode(&vocabModels)
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		result.Code = http.StatusInternalServerError
+		result.Status = "Failed"
+		result.Message = err.Error()
+		json.NewEncoder(response).Encode(result)
+		return
+	}
+	// check vocab
+	checkVocab := models.Vocab{}
+	config.DB.Model(models.Vocab{}).Where("id_vocab = ?", vocabModels.IdVocab).First(&checkVocab)
+	if checkVocab.Vocab == "" {
+		response.WriteHeader(http.StatusConflict)
+		result.Code = http.StatusConflict
+		result.Status = "Failed"
+		result.Message = "Vocab tidak ditemukan"
+		json.NewEncoder(response).Encode(result)
+		return
+	}
+	err = config.DB.Model(models.Vocab{}).Delete("id_vocab = ?", vocabModels.IdVocab).Error
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		result.Code = http.StatusInternalServerError
+		result.Status = "Failed"
+		result.Message = err.Error()
+		json.NewEncoder(response).Encode(result)
+		return
+	}
+	response.WriteHeader(http.StatusOK)
+	result.Code = http.StatusOK
+	result.Status = "Success"
+	result.Message = "Berhasil menghapus vocabulary"
 	json.NewEncoder(response).Encode(result)
 	return
 

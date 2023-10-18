@@ -22,6 +22,7 @@ func InitRoute() {
 	eJwt := mux.PathPrefix("/api").Subrouter()
 	eJwt.HandleFunc("/vocabulary", controller.PostVocab).Methods("POST")
 	eJwt.HandleFunc("/vocabulary", controller.PatchVocab).Methods("PATCH")
+	eJwt.HandleFunc("/vocabulary", controller.DeleteVocab).Methods("DELETE")
 	eJwt.HandleFunc("/vocabulary", controller.GetVocabularyByOrder).Methods("GET")
 	eJwt.HandleFunc("/vocabulary/date", controller.GetVocabularyByDate).Methods("GET")
 	eJwt.HandleFunc("/vocabulary/search", controller.GetVocabularyBySearch).Methods("POST")

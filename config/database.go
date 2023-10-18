@@ -9,11 +9,19 @@ import (
 	"gorm.io/gorm"
 )
 
+// const (
+// 	DB_USER     = "myvocab"
+// 	DB_PASSWORD = "myvocab123"
+// 	DB_NAME     = "myvocab_db"
+// 	DB_HOST     = "vocab-db.cbuoaypgqh0v.us-east-1.rds.amazonaws.com"
+// 	DB_PORT     = "3306"
+// )
+
 const (
-	DB_USER     = "myvocab"
-	DB_PASSWORD = "myvocab123"
+	DB_USER     = "root"
+	DB_PASSWORD = ""
 	DB_NAME     = "myvocab_db"
-	DB_HOST     = "vocab-db.cbuoaypgqh0v.us-east-1.rds.amazonaws.com"
+	DB_HOST     = "localhost"
 	DB_PORT     = "3306"
 )
 
@@ -37,7 +45,7 @@ func InitDb() {
 
 func MigrateDB() {
 	DB.AutoMigrate(&models.User{})
-	DB.AutoMigrate(&models.Vocab{})
 	DB.AutoMigrate(&models.TypeVocab{})
+	DB.AutoMigrate(&models.Vocab{})
 
 }
