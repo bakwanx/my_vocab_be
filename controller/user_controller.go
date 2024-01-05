@@ -129,7 +129,7 @@ func RefreshToken(response http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		response.WriteHeader(http.StatusBadRequest)
 		result.Code = http.StatusBadRequest
-		result.Status = "500"
+		result.Status = "Failed"
 		result.Message = "Bad request"
 		json.NewEncoder(response).Encode(result)
 		return
@@ -155,7 +155,7 @@ func RefreshToken(response http.ResponseWriter, request *http.Request) {
 		if err != nil {
 			response.WriteHeader(http.StatusInternalServerError)
 			result.Code = http.StatusInternalServerError
-			result.Status = "500"
+			result.Status = "Failed"
 			result.Message = "Error"
 			json.NewEncoder(response).Encode(result)
 			return
@@ -167,7 +167,7 @@ func RefreshToken(response http.ResponseWriter, request *http.Request) {
 
 		response.WriteHeader(http.StatusOK)
 		result.Code = http.StatusOK
-		result.Status = "200"
+		result.Status = "Success"
 		result.Message = "Success generate token"
 		result.Data = tokenResponse
 		json.NewEncoder(response).Encode(result)
@@ -176,7 +176,7 @@ func RefreshToken(response http.ResponseWriter, request *http.Request) {
 
 	response.WriteHeader(http.StatusInternalServerError)
 	result.Code = http.StatusInternalServerError
-	result.Status = "500"
+	result.Status = "Failed"
 	result.Message = "Error"
 	json.NewEncoder(response).Encode(result)
 	return
@@ -191,7 +191,7 @@ func Login(response http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		response.WriteHeader(http.StatusBadRequest)
 		result.Code = http.StatusBadRequest
-		result.Status = "400"
+		result.Status = "Failed"
 		result.Message = "Bad request"
 		json.NewEncoder(response).Encode(result)
 		return
@@ -201,7 +201,7 @@ func Login(response http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		response.WriteHeader(http.StatusInternalServerError)
 		result.Code = http.StatusInternalServerError
-		result.Status = "500"
+		result.Status = "Failed"
 		result.Message = "Status internal server error"
 		json.NewEncoder(response).Encode(result)
 		return
@@ -211,7 +211,7 @@ func Login(response http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		response.WriteHeader(http.StatusNotFound)
 		result.Code = http.StatusNotFound
-		result.Status = "500"
+		result.Status = "Failed"
 		result.Message = "User not found"
 		json.NewEncoder(response).Encode(result)
 		return
@@ -225,7 +225,7 @@ func Login(response http.ResponseWriter, request *http.Request) {
 	if passErr != nil {
 		response.WriteHeader(http.StatusUnauthorized)
 		result.Code = http.StatusUnauthorized
-		result.Status = "401"
+		result.Status = "Failed"
 		result.Message = "User unauthorized"
 		json.NewEncoder(response).Encode(result)
 		return
@@ -244,7 +244,7 @@ func Login(response http.ResponseWriter, request *http.Request) {
 
 	response.WriteHeader(http.StatusOK)
 	result.Code = http.StatusOK
-	result.Status = "200"
+	result.Status = "Success"
 	result.Message = "Success login"
 	result.Data = userResponse
 	json.NewEncoder(response).Encode(result)
