@@ -18,7 +18,6 @@ type Vocab struct {
 	Translation     string    `json:"translation" form:"translation"`
 	Variation       string    `json:"variation" form:"variation"`
 	Note            string    `json:"note" form:"note"`
-	ExampleSentence string    `json:"example_sentece" form:"example_sentece"`
 	CreatedAt       time.Time `form:"created_at"`
 	UpdatedAt       time.Time `form:"updated_at"`
 }
