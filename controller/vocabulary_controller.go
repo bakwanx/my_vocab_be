@@ -7,6 +7,9 @@ import (
 	"my_vocab/models"
 	"net/http"
 	"time"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 var (
@@ -35,6 +38,7 @@ func PostVocab(response http.ResponseWriter, request *http.Request) {
 		json.NewEncoder(response).Encode(result)
 		return
 	}
+	vocabModels.Vocab = cases.Title(language.Dutch).String(vocabModels.Vocab)
 	vocabModels.CreatedAt = timeNow
 	vocabModels.UpdatedAt = timeNow
 	err = config.DB.Save(&vocabModels).Error
@@ -72,7 +76,9 @@ func PatchVocab(response http.ResponseWriter, request *http.Request) {
 	// variation := request.FormValue("variation")
 	// note := request.FormValue("note")
 	timeNow := time.Now()
-
+	if vocabModels.Vocab != "" {
+		vocabModels.Vocab = cases.Title(language.Dutch).String(vocabModels.Vocab)
+	}
 	vocabModels.CreatedAt = timeNow
 	vocabModels.UpdatedAt = timeNow
 	err = config.DB.Where("id_vocab = ?", vocabModels.IdVocab).Updates(&vocabModels).Error
