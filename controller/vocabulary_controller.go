@@ -188,7 +188,7 @@ func PostTypeVocab(response http.ResponseWriter, request *http.Request) {
 	err := json.NewDecoder(request.Body).Decode(&typeVocabModels)
 	timeNow := time.Now()
 
-	// check user
+	// check vocab
 	checkTypeVocab := models.TypeVocab{}
 	config.DB.Model(models.TypeVocab{}).Where("type = ?", typeVocabModels.Type).First(&checkTypeVocab)
 	if checkTypeVocab.Type != "" {
