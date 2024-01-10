@@ -120,6 +120,25 @@ func GetVocabularyByOrder(response http.ResponseWriter, request *http.Request) {
 
 }
 
+func GetVocabularyDetail(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("Content-Type", "application/json")
+	var result out.Response
+
+	idVocab := request.URL.Query().Get("id_vocab")
+	vocabModel := models.Vocab{}
+
+	// get by order alphabet
+	config.DB.Model(models.Vocab{}).Where("id_vocab = ?", idVocab).Preload("TypeVocab").Find(&vocabModel)
+	response.WriteHeader(http.StatusOK)
+	result.Code = http.StatusOK
+	result.Status = "Success"
+	result.Data = vocabModel
+	result.Message = "Berhasil mendapatkan vocabulary"
+	json.NewEncoder(response).Encode(result)
+	return
+
+}
+
 func GetVocabularyByDate(response http.ResponseWriter, request *http.Request) {
 	response.Header().Set("Content-Type", "application/json")
 	var result out.Response
