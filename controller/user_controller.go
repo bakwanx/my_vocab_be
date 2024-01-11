@@ -197,16 +197,6 @@ func Login(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	err = config.DB.First(&dbUser).Error
-	if err != nil {
-		response.WriteHeader(http.StatusInternalServerError)
-		result.Code = http.StatusInternalServerError
-		result.Status = "Failed"
-		result.Message = "Status internal server error"
-		json.NewEncoder(response).Encode(result)
-		return
-	}
-
 	err = config.DB.Where("email = ?", user.Email).First(&dbUser).Error
 	if err != nil {
 		response.WriteHeader(http.StatusNotFound)
