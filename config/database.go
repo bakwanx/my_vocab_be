@@ -11,21 +11,21 @@ import (
 	"gorm.io/gorm"
 )
 
-// const (
-// 	DB_USER     = "myvocab"
-// 	DB_PASSWORD = "myvocab123"
-// 	DB_NAME     = "myvocab_db"
-// 	DB_HOST     = "vocab-db.cbuoaypgqh0v.us-east-1.rds.amazonaws.com"
-// 	DB_PORT     = "3306"
-// )
-
 const (
-	DB_USER     = "root"
-	DB_PASSWORD = "flutter123"
+	DB_USER     = "myvocab"
+	DB_PASSWORD = "myvocab123"
 	DB_NAME     = "myvocab_db"
-	DB_HOST     = "127.0.0.1"
+	DB_HOST     = "vocab-db.cbuoaypgqh0v.us-east-1.rds.amazonaws.com"
 	DB_PORT     = "3306"
 )
+
+// const (
+// 	DB_USER     = "root"
+// 	DB_PASSWORD = "flutter123"
+// 	DB_NAME     = "myvocab_db"
+// 	DB_HOST     = "127.0.0.1"
+// 	DB_PORT     = "3306"
+// )
 
 // const (
 // 	DB_USER     = "root"
