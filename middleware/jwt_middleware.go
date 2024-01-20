@@ -59,9 +59,9 @@ func MiddlewareJWTAuthorization(next http.Handler) http.Handler {
 
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			if method, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("Signing method invalid")
+				return http.StatusUnauthorized, fmt.Errorf("Signing method invalid")
 			} else if method != JWT_SIGNING_METHOD {
-				return nil, fmt.Errorf("Signing method invalid")
+				return http.StatusUnauthorized, fmt.Errorf("Signing method invalid")
 			}
 
 			return JWT_SIGNATURE_KEY, nil
