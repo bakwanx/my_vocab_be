@@ -67,7 +67,7 @@ func MiddlewareJWTAuthorization(next http.Handler) http.Handler {
 			return JWT_SIGNATURE_KEY, nil
 		})
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
