@@ -30,5 +30,5 @@ func InitRoute() {
 	eJwt.HandleFunc("/type/vocabulary", controller.PostTypeVocab).Methods("POST")
 	eJwt.HandleFunc("/type/vocabulary", controller.GetType).Methods("GET")
 	eJwt.Use(middleware.MiddlewareJWTAuthorization)
-	http.ListenAndServe(":8080", middleware.CustomLogger(os.Stderr, mux))
+	http.ListenAndServe(":8090", middleware.CustomLogger(os.Stderr, mux))
 }
