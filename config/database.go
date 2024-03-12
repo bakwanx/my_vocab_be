@@ -11,11 +11,19 @@ import (
 	"gorm.io/gorm"
 )
 
+// const (
+// 	DB_USER     = "myvocab"
+// 	DB_PASSWORD = "myvocab123"
+// 	DB_NAME     = "myvocab_db"
+// 	DB_HOST     = "vocab-db.cbuoaypgqh0v.us-east-1.rds.amazonaws.com"
+// 	DB_PORT     = "3306"
+// )
+
 const (
-	DB_USER     = "myvocab"
-	DB_PASSWORD = "myvocab123"
-	DB_NAME     = "myvocab_db"
-	DB_HOST     = "vocab-db.cbuoaypgqh0v.us-east-1.rds.amazonaws.com"
+	DB_USER     = "myvocabm_myvocab"
+	DB_PASSWORD = "myvocab123!"
+	DB_NAME     = "myvocabm_my_vocab"
+	DB_HOST     = "103.163.138.109"
 	DB_PORT     = "3306"
 )
 
